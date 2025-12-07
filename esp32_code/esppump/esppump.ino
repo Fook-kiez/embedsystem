@@ -3,7 +3,7 @@
 const char* ssid     = "paitummuan";
 const char* password = "1234567890";
 #define waterpump 23
-const char* serverUrl = "http://grouprproject.uk/api/data/fire";
+const char* serverUrl = "http://api.grouprproject.uk/api/data/fire";
 void setup() {
   Serial.begin(115200);
   delay(1000);
@@ -11,7 +11,7 @@ void setup() {
   WiFi.begin(ssid, password);
   Serial.print("Connecting to WiFi");
   while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
+    delay(200);
     Serial.print(".");
   }
   Serial.println("\nConnected!");
@@ -42,10 +42,10 @@ void loop() {
         if(value == 1 ){
           digitalWrite(waterpump, HIGH);
 
-      }
-      else{
-        digitalWrite(waterpump, LOW);
-      }
+        }
+        else{
+          digitalWrite(waterpump, LOW);
+        }
     } else {
       Serial.print("fire API error code: ");
       Serial.println(fireResponseCode);

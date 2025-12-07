@@ -8,6 +8,7 @@ const GS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxO-ctav5gHeIAKM6
 app.use(cors());
 app.use(express.json());
 let lightstate = 0 ;
+
 let textData = {"message": "Hello from Python!"};
 let latestData = {
   "temperature": 26.75,
@@ -50,6 +51,7 @@ app.post("/api/data", async (req, res) => {
     ...req.body,
     timestamp: new Date().toISOString(),
   };
+  res.json({ status: "ok" });
   await sendToGoogleSheets({
     temperature: latestData.temperature,
     humidity: latestData.humidity,
@@ -59,10 +61,9 @@ app.post("/api/data", async (req, res) => {
     lightstate: lightstate,           // also log current lightstate
   });
   await sendToThingSpeak(latestData);
-  res.json({ status: "ok" });
 });
 app.post("/api/datatext", (req, res) => {
-  console.log("Received data:", req.body);
+  //console.log("Received data:", req.body);
   textData = {
     ...req.body,
     timestamp: new Date().toISOString(),
@@ -96,6 +97,13 @@ app.get("/api/data/light", (req, res) => {
     return res.status(404).json({ error: "No data yet" });
   }
   res.json(lightstate);
+});
+app.get("/api/data/fire", (req, res) => {
+  fire = latestData.have_fire;
+  if (fire==null) {
+    return res.status(404).json({ error: "No data yet" });
+  }
+  res.json(fire);
 });
 
 app.listen(PORT, () => {
