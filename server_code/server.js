@@ -1,9 +1,11 @@
 const express = require("express");
 const cors = require("cors");
-
+require("dotenv").config();
+const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 const app = express();
 const PORT = 3000;
 const GS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxO-ctav5gHeIAKM6ECD0Vbg9Nj44wY26-HohVQs4ysLqd3h0-OV2QaeII_iInqOLg/exec";
+
 // allow your website to fetch
 app.use(cors());
 app.use(express.json());
@@ -17,6 +19,23 @@ let latestData = {
   "light_level": 1.65,
   "temperature2": 27.10
 }; // in-memory storage for demo
+
+
+async function sendNotice() {
+  const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN;
+  const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || process.env.TELEGRAM_CHAT_ID;
+
+  try {
+    await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ chat_id: TELEGRAM_CHAT_ID, text: "ไฟไหม้" }),
+    });
+    console.log("ส่งข้อความเรียบร้อยแล้ว");
+  } catch (err) {
+    console.error("เกิดข้อผิดพลาด:", err);
+  }
+}
 async function sendToGoogleSheets(payload) {
   try {
     const params = new URLSearchParams(payload);
@@ -52,6 +71,9 @@ app.post("/api/data", async (req, res) => {
     timestamp: new Date().toISOString(),
   };
   res.json({ status: "ok" });
+  if(latestData.have_fire==1){
+    sendNotice()
+  }
   await sendToGoogleSheets({
     temperature: latestData.temperature,
     humidity: latestData.humidity,
